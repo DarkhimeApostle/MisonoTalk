@@ -554,6 +554,8 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver{
     setState(() {
       messages.clear();
       messages.add(Message(message: welcomeMsg, type: Message.assistant));
+      // 自动添加时间戳消息
+      messages.add(Message(message: DateTime.now().millisecondsSinceEpoch.toString(), type: Message.timestamp));
     });
   }
 
@@ -609,9 +611,6 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver{
             userMsg = "$userMsg\\${textController.text}";
             messages.last.message = userMsg;
           } else {
-            if (messages.length==1) {
-              messages.add(Message(message: DateTime.now().millisecondsSinceEpoch.toString(), type: Message.timestamp));
-            }
             userMsg = textController.text;
             messages.add(Message(message: userMsg, type: Message.user));
           }
@@ -755,15 +754,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver{
       } else {
         debugPrint("cancel");
       }
-    } else if (value == 'Time') {
-      if(messages.last.type != Message.timestamp){
-        setState(() {
-          messages.add(Message(message: DateTime.now().millisecondsSinceEpoch.toString(), type: Message.timestamp));
-        });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          setScrollPercent(1.0);
-        });
-      }
+
     } else if (value == 'System') {
       systemPopup(context, "", (String edited,bool isSend){
         setState(() {
@@ -885,10 +876,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver{
           value: 'Save',
           child: Text('Save'),
         ),
-        const PopupMenuItem(
-          value: 'Time',
-          child: Text('Time'),
-        ),
+
         const PopupMenuItem(
           value: 'System',
           child: Text('System'),
