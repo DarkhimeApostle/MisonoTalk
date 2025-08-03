@@ -1034,7 +1034,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
 
   Widget popupMenu() {
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.close, color: Colors.white, size: 40),
+      icon: const Icon(Icons.add, color: Colors.white, size: 40),
       itemBuilder: (context) => [
         PopupMenuItem(
           value: 'Language',
