@@ -1159,7 +1159,8 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
+            padding:
+                const EdgeInsets.only(left: 12, right: 12, top: 10, bottom: 8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end, // 添加这行
               children: [
@@ -1193,9 +1194,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
                           horizontal: 10,
                           vertical: 8,
                         ),
-                        hintText: inputLock
-                            ? getText('响应中', 'Responding')
-                            : getText('', ''),
+                        hintText: inputLock ? getText('', '') : getText('', ''),
 
                         // 添加焦点边框配置
                         focusedBorder: OutlineInputBorder(
@@ -1203,7 +1202,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
                             color: Colors.white, // 改为白色
                             width: 2.0, // 边框宽度
                           ),
-                          borderRadius: BorderRadius.circular(8), // 圆角
+                          borderRadius: BorderRadius.circular(20), // 改为最圆角
                         ),
                         // 未选中时的边框
                         enabledBorder: OutlineInputBorder(
@@ -1212,7 +1211,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
                                 255, 255, 255, 255)!, // 静默边框颜色
                             width: 1.0,
                           ),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(20), // 改为最圆角
                         ),
                       ),
                     ),
@@ -1240,7 +1239,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
                     backgroundColor: const Color(0xffff899e),
                     foregroundColor: const Color(0xffffffff),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(20), // 改为最圆角
                     ),
                   ),
                   child: Text(getText('发送', 'Send')),
