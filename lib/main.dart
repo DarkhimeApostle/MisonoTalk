@@ -1138,7 +1138,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
                       ),
                       hintText: inputLock
                           ? getText('响应中', 'Responding')
-                          : getText('输入消息', 'Type a message'),
+                          : getText(' ', ' '),
                     ),
                   ),
                 ),
