@@ -134,6 +134,34 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
       debugPrint(payload);
       handleAppLink(uri.queryParameters);
     });
+
+    // 添加自动时间戳功能
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _addAutoTimeMessage();
+      }
+    });
+  }
+
+  // 添加自动时间消息的方法
+  void _addAutoTimeMessage() {
+    if (!mounted) return;
+
+    setState(() {
+      messages.add(
+        Message(
+          message: DateTime.now().millisecondsSinceEpoch.toString(),
+          type: Message.timestamp,
+        ),
+      );
+    });
+
+    // 延迟滚动到底部，确保UI更新完成
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        setScrollPercent(1.0);
+      }
+    });
   }
 
   @override
