@@ -1,7 +1,8 @@
 # MisonoTalk
 
 ### 这是什么
-源于@k96e  的项目，进行一些适应我使用的功能变更，因此单独作为MisonoTalk探索版开发，
+源于@k96e  的项目，进行一些适应我使用的功能变更，因此单独作为MisonoTalk探索版开发，  
+
 项目整体皆为@k96e创建。以下是其本人对MisonoTalk的视频介绍:
  [Bilibili](https://www.bilibili.com/video/BV1YBvXenEZK)
 源项目地址:
