@@ -5,7 +5,7 @@
 
 项目大多数皆为@k96e创建。以下是其本人对MisonoTalk的视频介绍:
  [Bilibili](https://www.bilibili.com/video/BV1YBvXenEZK)
-源项目地址:
+
 
 
 ### 使用

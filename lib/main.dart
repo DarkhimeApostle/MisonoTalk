@@ -52,8 +52,25 @@ class MomotalkApp extends StatelessWidget {
     return MaterialApp(
       title: 'MomoTalk',
       home: const MainPage(),
-      theme: lightTheme,
-      darkTheme: darkTheme,
+      //对软件的光标颜色进行自定义设置
+      theme: lightTheme.copyWith(
+        textSelectionTheme: TextSelectionThemeData(
+          selectionHandleColor:
+              const Color.fromARGB(255, 255, 67, 142), // 水滴状指示器颜色
+          selectionColor: const Color.fromARGB(255, 105, 126, 171)
+              .withOpacity(0.3), // 选中文本背景色
+          cursorColor: const Color.fromARGB(255, 0, 0, 0), // 光标颜色
+        ),
+      ),
+      darkTheme: darkTheme.copyWith(
+        textSelectionTheme: TextSelectionThemeData(
+          selectionHandleColor:
+              const Color.fromARGB(255, 255, 67, 142), // 水滴状指示器颜色
+          selectionColor: const Color.fromARGB(255, 105, 126, 171)
+              .withOpacity(0.3), // 选中文本背景色
+          cursorColor: const Color.fromARGB(255, 0, 0, 0), // 光标颜色
+        ),
+      ),
       themeMode: ThemeMode.system,
     );
   }
@@ -70,6 +87,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
   final fn = FocusNode();
   final textController = TextEditingController();
   final scrollController = ScrollController();
+  final textScrollController = ScrollController(); // 添加文本滚动控制器
   final notification = NotificationHelper();
   final storage = StorageService();
   static const String studentName = "未花";
@@ -1115,47 +1133,59 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
           Padding(
             padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end, // 添加这行
               children: [
                 Expanded(
-                  child: TextField(
-                    focusNode: fn,
-                    controller: textController,
-                    // enabled: !inputLock,
-                    onEditingComplete: () {
-                      if (textController.text.isEmpty && userMsg.isNotEmpty) {
-                        sendMsg(true);
-                      } else if (textController.text.isNotEmpty) {
-                        sendMsg(false);
-                      }
-                    },
-                    decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      fillColor: const Color(0xffff899e),
-                      isCollapsed: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
-                      ),
-                      hintText: inputLock
-                          ? getText('响应中', 'Responding')
-                          : getText(' ', ' '),
+                  child: Container(
+                    // 使用Container替代ConstrainedBox，支持动态高度
+                    constraints: const BoxConstraints(
+                      minHeight: 40, // 最小高度
+                      maxHeight: 300, // 最大高度
+                    ),
+                    child: TextField(
+                      focusNode: fn,
+                      controller: textController,
+                      // enabled: !inputLock,
+                      // 添加长文本支持
+                      maxLines: null, // 让TextField自己决定高度，支持动态调整
+                      textInputAction: TextInputAction.newline,
+                      keyboardType: TextInputType.multiline,
+                      onEditingComplete: () {
+                        if (textController.text.isEmpty && userMsg.isNotEmpty) {
+                          sendMsg(true);
+                        } else if (textController.text.isNotEmpty) {
+                          sendMsg(false);
+                        }
+                      },
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        fillColor: const Color(0xffff899e),
+                        isCollapsed: false, // 改为false支持多行
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        hintText: inputLock
+                            ? getText('响应中', 'Responding')
+                            : getText('', ''),
 
-                      // 添加焦点边框配置
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.white, // 改为白色
-                          width: 2.0, // 边框宽度
+                        // 添加焦点边框配置
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Colors.white, // 改为白色
+                            width: 2.0, // 边框宽度
+                          ),
+                          borderRadius: BorderRadius.circular(8), // 圆角
                         ),
-                        borderRadius: BorderRadius.circular(8), // 圆角
-                      ),
-                      // 未选中时的边框
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: const Color.fromARGB(
-                              255, 255, 255, 255)!, // 静默边框颜色
-                          width: 1.0,
+                        // 未选中时的边框
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: const Color.fromARGB(
+                                255, 255, 255, 255)!, // 静默边框颜色
+                            width: 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
