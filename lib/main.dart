@@ -1139,6 +1139,24 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
                       hintText: inputLock
                           ? getText('响应中', 'Responding')
                           : getText(' ', ' '),
+
+                      // 添加焦点边框配置
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.white, // 改为白色
+                          width: 2.0, // 边框宽度
+                        ),
+                        borderRadius: BorderRadius.circular(8), // 圆角
+                      ),
+                      // 未选中时的边框
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: const Color.fromARGB(
+                              255, 255, 255, 255)!, // 静默边框颜色
+                          width: 1.0,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
