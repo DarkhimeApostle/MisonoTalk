@@ -1,4 +1,4 @@
-# MisonoTalk
+# MisonoTalk 探索版
 
 ### 这是什么
 源于@k96e  的项目 [Github Release](https://github.com/k96e/MisonoTalk/releases)，进行一些适应我使用的功能变更，因此单独作为MisonoTalk探索版开发，  
