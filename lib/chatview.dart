@@ -130,7 +130,7 @@ class ChatBubbleLayoutLeft extends StatelessWidget {
                       child: Text(
                         message,
                         style: isStar
-                            ? const TextStyle(fontSize: 14, color: Colors.white)
+                            ? const TextStyle(fontSize: 10, color: Colors.white)
                             : const TextStyle(
                                 fontSize: 18, color: Colors.white),
                       ),
@@ -330,16 +330,38 @@ class BubblePainter extends CustomPainter {
     final path = Path();
 
     if (isFirstBubble) {
-      // Draw triangle for the first bubble
+      // 自适应三角形位置 - 根据气泡高度动态计算
       if (isLeft) {
-        path.moveTo(-4, 17);
-        path.lineTo(4, 7);
-        path.lineTo(4, 27);
+        // 计算气泡中心高度
+        double centerY = size.height / 2;
+        // 三角形宽度
+        double triangleWidth = 10.0;
+        // 三角形高度
+        double triangleHeight = 15.0;
+
+        path.moveTo(-triangleWidth / 2, centerY);
+        path.lineTo(triangleWidth / 2, centerY - triangleHeight / 2);
+        path.lineTo(triangleWidth / 2, centerY + triangleHeight / 2);
         path.close();
       } else {
-        path.moveTo(size.width + 4, 17);
-        path.lineTo(size.width - 4, 27);
-        path.lineTo(size.width - 4, 7);
+        // 右侧气泡的三角形 - 优化位置计算
+        double centerY = size.height / 2;
+        double triangleWidth = 6.0;
+        double triangleHeight = 10.0;
+
+        // 确保三角形指向气泡中心，并考虑文本的实际高度
+        // 如果气泡高度很小，调整三角形大小
+        if (size.height < 20) {
+          triangleHeight = size.height * 0.4; // 小气泡使用更小的三角形
+        }
+
+        // 用户消息的三角小尾巴向右偏移，避免与气泡边缘重叠
+        double offset = 3.0; //
+        path.moveTo(size.width + triangleWidth / 2 + offset, centerY);
+        path.lineTo(size.width - triangleWidth / 2 + offset,
+            centerY - triangleHeight / 2);
+        path.lineTo(size.width - triangleWidth / 2 + offset,
+            centerY + triangleHeight / 2);
         path.close();
       }
     }
