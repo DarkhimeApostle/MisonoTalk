@@ -5,11 +5,13 @@ class ChatElement extends StatelessWidget {
   final String message;
   final int type;
   final String stuName;
+  final bool isRead;
   const ChatElement(
       {super.key,
       required this.message,
       required this.type,
-      required this.stuName});
+      required this.stuName,
+      this.isRead = false});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,7 @@ class ChatElement extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          ChatBubbleLayoutRight(messages: message.split("\\")),
+          ChatBubbleLayoutRight(messages: message.split("\\"), isRead: isRead),
           const SizedBox(height: 10),
         ],
       );
@@ -227,48 +229,78 @@ class ChatBubbleImage extends StatelessWidget {
 // No name and avatar
 class ChatBubbleLayoutRight extends StatelessWidget {
   final List<String> messages;
+  final bool isRead;
 
   const ChatBubbleLayoutRight({
     super.key,
     required this.messages,
+    this.isRead = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            ...messages.asMap().entries.map((entry) {
-              int idx = entry.key;
-              String message = entry.value;
-              if (message.isEmpty) {
-                return const SizedBox.shrink();
-              }
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: CustomPaint(
-                  painter: BubblePainter(
-                      isFirstBubble: idx == 0,
-                      isLeft: false,
-                      bubbleColor: const Color(0xff4a8aca)),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Text(
-                      message,
-                      style: const TextStyle(fontSize: 18, color: Colors.white),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        ...messages.asMap().entries.map((entry) {
+          int idx = entry.key;
+          String message = entry.value;
+          if (message.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // 已读标识放在消息左侧，自适应位置
+                if (isRead && idx == messages.length - 1)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, right: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 200, 204, 209),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: const Text(
+                        "已读",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color.fromARGB(243, 255, 255, 255),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                Flexible(
+                  child: CustomPaint(
+                    painter: BubblePainter(
+                        isFirstBubble: idx == 0,
+                        isLeft: false,
+                        bubbleColor: const Color(0xff4a8aca)),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Text(
+                        message,
+                        style:
+                            const TextStyle(fontSize: 18, color: Colors.white),
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                      ),
                     ),
                   ),
                 ),
-              );
-            }),
-          ],
-        ),
-      ),
-      const SizedBox(width: 10),
-    ]);
+                const SizedBox(width: 10),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
   }
 }
 

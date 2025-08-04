@@ -4,26 +4,32 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
 // type 1:asstant 2:user 3:system 4:timestamp
 class Message {
   String message;
   int type;
   bool isHide = false;
   String? reasoningContent;
+  bool isRead = false; // 添加已读状态字段
   static const int assistant = 1;
   static const int user = 2;
   static const int system = 3;
   static const int timestamp = 4;
   static const int image = 5;
+  static const int readStatus = 6; // 添加已读状态消息类型
 
-  Message({required this.message, required this.type, 
-    this.isHide = false, this.reasoningContent});
+  Message(
+      {required this.message,
+      required this.type,
+      this.isHide = false,
+      this.reasoningContent,
+      this.isRead = false});
 
   Map<String, dynamic> toJson() {
     return {
       'message': message,
       'type': type,
+      'isRead': isRead,
     };
   }
 
@@ -31,20 +37,25 @@ class Message {
     return Message(
       message: json['message'],
       type: json['type'],
+      isRead: json['isRead'] ?? false,
     );
   }
 
   @override
   String toString() {
-    return 'Message{message: $message, type: $type, isHide: $isHide}';
+    return 'Message{message: $message, type: $type, isHide: $isHide, isRead: $isRead}';
   }
 }
 
 List<Message> copyMsgs(List<Message> msgs) {
   List<Message> newMsgs = [];
   for (var m in msgs) {
-    newMsgs.add(Message(message: m.message, type: m.type, 
-      isHide: m.isHide, reasoningContent: m.reasoningContent));
+    newMsgs.add(Message(
+        message: m.message,
+        type: m.type,
+        isHide: m.isHide,
+        reasoningContent: m.reasoningContent,
+        isRead: m.isRead));
   }
   return newMsgs;
 }
@@ -59,25 +70,29 @@ class Config {
   String? presencePenalty;
   String? maxTokens;
 
-  Config({required this.name, required this.baseUrl, 
-    required this.apiKey, required this.model,
-    this.temperature, this.frequencyPenalty, 
-    this.presencePenalty, this.maxTokens});
+  Config(
+      {required this.name,
+      required this.baseUrl,
+      required this.apiKey,
+      required this.model,
+      this.temperature,
+      this.frequencyPenalty,
+      this.presencePenalty,
+      this.maxTokens});
 
   @override
   String toString() {
     return 'Config{name: $name, baseUrl: $baseUrl, apiKey: $apiKey, model: $model, '
-    'temperature: $temperature, frequencyPenalty: $frequencyPenalty, '
-    'presencePenalty: $presencePenalty, maxTokens: $maxTokens}';
+        'temperature: $temperature, frequencyPenalty: $frequencyPenalty, '
+        'presencePenalty: $presencePenalty, maxTokens: $maxTokens}';
   }
 
   factory Config.fromJson(Map<String, dynamic> json) {
     return Config(
-      name: json['name'],
-      baseUrl: json['baseUrl'],
-      apiKey: json['apiKey'],
-      model: json['model']
-    );
+        name: json['name'],
+        baseUrl: json['baseUrl'],
+        apiKey: json['apiKey'],
+        model: json['model']);
   }
 }
 
@@ -91,12 +106,20 @@ class SdConfig {
   int? steps;
   int? cfg;
 
-  SdConfig({required this.prompt, required this.negativePrompt, required this.model, 
-    required this.sampler, this.width, this.height, this.steps, this.cfg});
+  SdConfig(
+      {required this.prompt,
+      required this.negativePrompt,
+      required this.model,
+      required this.sampler,
+      this.width,
+      this.height,
+      this.steps,
+      this.cfg});
 }
 
 String msgListToJson(List<Message> messages) {
-  List<Map<String, dynamic>> jsonList = messages.map((message) => message.toJson()).toList();
+  List<Map<String, dynamic>> jsonList =
+      messages.map((message) => message.toJson()).toList();
   return jsonEncode(jsonList);
 }
 
@@ -108,38 +131,40 @@ List<Message> jsonToMsg(String jsonString) {
 String timestampToSystemMsg(String timestr) {
   DateTime t = DateTime.fromMillisecondsSinceEpoch(int.parse(timestr));
   const weekday = ["", "一", "二", "三", "四", "五", "六", "日"];
-  var result =
-      "${t.year}年${t.month}月${t.day}日星期${weekday[t.weekday]}"
-      "${t.hour.toString().padLeft(2,'0')}:${t.minute.toString().padLeft(2,'0')}";
+  var result = "${t.year}年${t.month}月${t.day}日星期${weekday[t.weekday]}"
+      "${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}";
   return "下面的对话开始于 $result";
 }
 
-List<List<String>> parseMsg(String prompt, List<Message> messages, List<String> welcomeMsgs) {
+List<List<String>> parseMsg(
+    String prompt, List<Message> messages, List<String> welcomeMsgs) {
   List<List<String>> msg = [];
-  msg.add(["system",prompt]);
+  msg.add(["system", prompt]);
   bool hideFlag = false;
   for (var m in messages) {
-    if(m.isHide){
-      if(!hideFlag){
-        msg.add(["system","此处部分对话已略过"]);
+    if (m.isHide) {
+      if (!hideFlag) {
+        msg.add(["system", "此处部分对话已略过"]);
         hideFlag = true;
       }
       continue;
     }
     hideFlag = false;
     if (m.type == Message.assistant) {
-      msg.add(["assistant",formatMsg(m.message,clearMiddle: true)]);
+      msg.add(["assistant", formatMsg(m.message, clearMiddle: true)]);
     } else if (m.type == Message.user) {
-      msg.add(["user",m.message]);
+      msg.add(["user", m.message]);
     } else if (m.type == Message.system) {
-      msg.add(["system",m.message]);
+      msg.add(["system", m.message]);
     } else if (m.type == Message.timestamp) {
       var timestr = timestampToSystemMsg(m.message);
-      msg.add(["system","下面的对话开始于$timestr"]);
+      msg.add(["system", "下面的对话开始于$timestr"]);
     }
   }
   bool multipleAssistantMsgs = msg.where((m) => m[0] == "assistant").length > 1;
-  if (multipleAssistantMsgs && msg.length > 1 && msg[1][0] == "assistant" && 
+  if (multipleAssistantMsgs &&
+      msg.length > 1 &&
+      msg[1][0] == "assistant" &&
       welcomeMsgs.contains(msg[1][1])) {
     msg.removeAt(1);
   }
@@ -152,7 +177,8 @@ String randomizeBackslashes(String resp) {
 
   for (int i = 0; i < resp.length; i++) {
     if (resp[i] == '\\') {
-      if (i + 1 < resp.length && (resp[i + 1] == '*'||resp[i + 1] == '（'||resp[i + 1] == '(')) {
+      if (i + 1 < resp.length &&
+          (resp[i + 1] == '*' || resp[i + 1] == '（' || resp[i + 1] == '(')) {
         result.write('\\');
       } else {
         if (random.nextInt(3) == 0) {
@@ -188,7 +214,7 @@ String formatMsg(String input, {bool clearMiddle = false}) {
 
 List<String> splitString(String input, List<String> patterns) {
   String var1 = patterns[0], var2 = patterns[1];
-    List<String> result = [];
+  List<String> result = [];
   int i = 0;
   while (i < input.length) {
     if (input.startsWith(var1, i)) {
@@ -199,8 +225,7 @@ List<String> splitString(String input, List<String> patterns) {
       }
       result.add(input.substring(i, nextIndex));
       i = nextIndex;
-    }
-    else if (input.startsWith(var2, i)) {
+    } else if (input.startsWith(var2, i)) {
       int nextIndex = input.indexOf(var1, i);
       if (nextIndex == -1) {
         result.add(input.substring(i));
@@ -214,14 +239,13 @@ List<String> splitString(String input, List<String> patterns) {
 }
 
 void snackBarAlert(BuildContext context, String msg) {
-  if(!context.mounted) return;
+  if (!context.mounted) return;
   ScaffoldMessenger.of(context).hideCurrentSnackBar();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      behavior: SnackBarBehavior.floating,
-      content: Text(msg),
-      showCloseIcon: true
-    ),
+        behavior: SnackBarBehavior.floating,
+        content: Text(msg),
+        showCloseIcon: true),
   );
 }
 
@@ -243,37 +267,38 @@ class DecimalTextInputFormatter extends TextInputFormatter {
   }
 }
 
-Widget msgsListWidget(BuildContext context, String jsonMessages, {bool isReverse = true}) {
+Widget msgsListWidget(BuildContext context, String jsonMessages,
+    {bool isReverse = true}) {
   List<Message> messages;
-  try{
+  try {
     messages = jsonToMsg(jsonMessages);
   } catch (e) {
     return SingleChildScrollView(
       child: Text("$e\n$jsonMessages"),
     );
   }
-  if(isReverse) {
+  if (isReverse) {
     messages = messages.reversed.toList();
   }
   return SizedBox(
-    height: MediaQuery.of(context).size.height*0.8,
-    width: MediaQuery.of(context).size.width*0.8,
-    child:ListView.builder(
-      itemCount: messages.length,
-      reverse: isReverse,
-      itemBuilder: (context, index) {
-        return Card(
-          child: Padding(
+      height: MediaQuery.of(context).size.height * 0.8,
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: ListView.builder(
+        itemCount: messages.length,
+        reverse: isReverse,
+        itemBuilder: (context, index) {
+          return Card(
+              child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              messages[index].type==Message.timestamp ? 
-                timestampToSystemMsg(messages[index].message) : messages[index].message,
-              style: messages[index].type==Message.assistant ? 
-                const TextStyle(color: Color(0xff1a85ff)) : null,
+              messages[index].type == Message.timestamp
+                  ? timestampToSystemMsg(messages[index].message)
+                  : messages[index].message,
+              style: messages[index].type == Message.assistant
+                  ? const TextStyle(color: Color(0xff1a85ff))
+                  : null,
             ),
-          )
-        );
-      },
-    )
-  );
+          ));
+        },
+      ));
 }

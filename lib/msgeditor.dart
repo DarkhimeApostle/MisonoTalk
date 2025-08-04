@@ -36,6 +36,8 @@ class MsgEditorState extends State<MsgEditor> {
           return msg.message.length;
         case Message.timestamp:
           return 28;
+        case Message.readStatus:
+          return 0; // 已读状态不计算字数
         default:
           return 0;
       }
@@ -48,6 +50,7 @@ class MsgEditorState extends State<MsgEditor> {
       case Message.assistant: return "A ";
       case Message.system: return "S ";
       case Message.timestamp: return "T ";
+      case Message.readStatus: return "R ";
       default: return "? ";
     }
   }

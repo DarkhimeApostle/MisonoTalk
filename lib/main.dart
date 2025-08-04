@@ -751,6 +751,10 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
     setState(() {
       inputLock = true;
       debugPrint("inputLocked");
+      // 标记最后一条用户消息为已读
+      if (messages.isNotEmpty && messages.last.type == Message.user) {
+        messages.last.isRead = true;
+      }
     });
     List<List<String>> msg = parseMsg(
       await storage.getPrompt(withExternal: externalPrompt),
@@ -1132,6 +1136,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
                                 message: message.message,
                                 type: message.type,
                                 stuName: studentName,
+                                isRead: message.isRead,
                               ),
                             ),
                           ),
@@ -1150,6 +1155,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
                           message: message.message,
                           type: message.type,
                           stuName: studentName,
+                          isRead: message.isRead,
                         ),
                       ),
                     );
