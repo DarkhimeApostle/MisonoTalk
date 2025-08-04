@@ -1082,6 +1082,9 @@ class MainPageState extends State<MainPage>
   Widget popupMenu() {
     return GestureDetector(
       onTap: () {
+        // 取消输入状态
+        fn.unfocus();
+
         setState(() {
           isMenuOpen = true;
         });
