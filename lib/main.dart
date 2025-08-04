@@ -1015,8 +1015,8 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
           });
         }
       });
-    } else if (value == 'Draw') {
-      sdWorkflow();
+      // } else if (value == 'Draw') {
+      //   sdWorkflow();
     } else if (value == 'Exit') {
       if (Platform.isWindows) {
         windowManager.close();
@@ -1094,7 +1094,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
           child: Text('ExtPrompt ${externalPrompt ? "√" : "×"}'),
         ),
         PopupMenuItem(value: 'Backup', child: Text(getText('备份', 'Backup'))),
-        PopupMenuItem(value: 'Draw', child: Text(getText('绘画', 'AiDraw'))),
+        // PopupMenuItem(value: 'Draw', child: Text(getText('绘画', 'AiDraw'))),
         PopupMenuItem(value: 'History', child: Text(getText('历史', 'History'))),
         PopupMenuItem(value: 'Records', child: Text(getText('记录', 'Records'))),
         PopupMenuItem(value: 'Msgs', child: Text(getText('消息', 'Msgs'))),
