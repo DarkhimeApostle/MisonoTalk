@@ -355,7 +355,7 @@ class BubblePainter extends CustomPainter {
           triangleHeight = size.height * 0.4; // 小气泡使用更小的三角形
         }
 
-        // 用户消息的三角小尾巴向右偏移，避免与气泡边缘重叠
+        // 用户消息的三角小尾巴向右偏移，避免与气泡边缘重叠 
         double offset = 3.0; //
         path.moveTo(size.width + triangleWidth / 2 + offset, centerY);
         path.lineTo(size.width - triangleWidth / 2 + offset,
