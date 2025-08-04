@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
 import 'utils.dart' show Message;
 
-
 class ChatElement extends StatelessWidget {
   final String message;
   final int type;
   final String stuName;
-  const ChatElement({super.key, required this.message, required this.type, required this.stuName});
+  const ChatElement(
+      {super.key,
+      required this.message,
+      required this.type,
+      required this.stuName});
 
   @override
   Widget build(BuildContext context) {
     if (type == Message.assistant) {
+      // 隐藏 Thinking... 消息
+      if (message.startsWith("Thinking...")) {
+        return const SizedBox.shrink();
+      }
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          for(var m in message.split("\\\\")) 
-            if(m.isNotEmpty) 
-              ChatBubbleLayoutLeft(name: stuName, messages: m.split("\\")),
-          const SizedBox(height: 10),
-        ]);
+        for (var m in message.split("\\\\"))
+          if (m.isNotEmpty)
+            ChatBubbleLayoutLeft(name: stuName, messages: m.split("\\")),
+        const SizedBox(height: 10),
+      ]);
     } else if (type == Message.user) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -25,17 +32,16 @@ class ChatElement extends StatelessWidget {
           const SizedBox(height: 10),
         ],
       );
-    } else if (type == Message.timestamp){
+    } else if (type == Message.timestamp) {
       DateTime t = DateTime.fromMillisecondsSinceEpoch(int.parse(message));
-      String timestr = "${t.hour.toString().padLeft(2,'0')}:"
-        "${t.minute.toString().padLeft(2,'0')}";
+      String timestr = "${t.hour.toString().padLeft(2, '0')}:"
+          "${t.minute.toString().padLeft(2, '0')}";
       return centerBubble(timestr);
     } else if (type == Message.system) {
       return centerBubble("System Instruction Here");
     } else if (type == Message.image) {
       return ChatBubbleImage(name: stuName, imageUrl: message);
-    }
-    else {
+    } else {
       return const SizedBox.shrink();
     }
   }
@@ -80,15 +86,13 @@ class ChatBubbleLayoutLeft extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(
-          width: 50,
-          child: Padding(
-            padding: EdgeInsets.only(top: 7),
-            child: CircleAvatar(
-              backgroundImage: AssetImage("assets/avatar.png"),
-              radius: 25,
-            )
-          )
-        ),
+            width: 50,
+            child: Padding(
+                padding: EdgeInsets.only(top: 7),
+                child: CircleAvatar(
+                  backgroundImage: AssetImage("assets/avatar.png"),
+                  radius: 25,
+                ))),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -96,30 +100,37 @@ class ChatBubbleLayoutLeft extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 4),
               ...messages.asMap().entries.map((entry) {
                 int idx = entry.key;
                 String message = entry.value.trim();
-                bool isStar = message.startsWith("*")||message.startsWith("（")||message.startsWith("(");
+                bool isStar = message.startsWith("*") ||
+                    message.startsWith("（") ||
+                    message.startsWith("(");
                 if (message.isEmpty) {
                   return const SizedBox.shrink();
                 }
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: CustomPaint(
-                    painter:
-                        BubblePainter(isFirstBubble: idx == 0, isLeft: true, 
-                          bubbleColor: isStar?const Color(0x884c5b70):const Color(0xff4c5b70)),
+                    painter: BubblePainter(
+                        isFirstBubble: idx == 0,
+                        isLeft: true,
+                        bubbleColor: isStar
+                            ? const Color(0x884c5b70)
+                            : const Color(0xff4c5b70)),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
                       child: Text(
                         message,
-                        style: isStar 
-                          ? const TextStyle(fontSize: 14, color: Colors.white)
-                          : const TextStyle(fontSize: 18, color: Colors.white),
+                        style: isStar
+                            ? const TextStyle(fontSize: 14, color: Colors.white)
+                            : const TextStyle(
+                                fontSize: 18, color: Colors.white),
                       ),
                     ),
                   ),
@@ -161,7 +172,8 @@ class ChatBubbleImage extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 4),
               Padding(
@@ -172,33 +184,36 @@ class ChatBubbleImage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: FractionallySizedBox(
-                        widthFactor: 0.8,
-                        child: Image.network(imageUrl,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            } else {
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              );
-                            }
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.error);
-                          },
-                        )
-                      )
-                    )
-                  ),
+                      padding: const EdgeInsets.all(4),
+                      child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: FractionallySizedBox(
+                              widthFactor: 0.8,
+                              child: Image.network(
+                                imageUrl,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) {
+                                    return child;
+                                  } else {
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress
+                                                    .expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                loadingProgress
+                                                    .expectedTotalBytes!
+                                            : null,
+                                      ),
+                                    );
+                                  }
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.error);
+                                },
+                              )))),
                 ),
               )
             ],
@@ -222,32 +237,35 @@ class ChatBubbleLayoutRight extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(children: [
       Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          ...messages.asMap().entries.map((entry) {
-            int idx = entry.key;
-            String message = entry.value;
-            if (message.isEmpty) {
-              return const SizedBox.shrink();
-            }
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: CustomPaint(
-                painter: BubblePainter(isFirstBubble: idx == 0, isLeft: false, bubbleColor: const Color(0xff4a8aca)),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Text(
-                    message,
-                    style: const TextStyle(fontSize: 18, color: Colors.white),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            ...messages.asMap().entries.map((entry) {
+              int idx = entry.key;
+              String message = entry.value;
+              if (message.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: CustomPaint(
+                  painter: BubblePainter(
+                      isFirstBubble: idx == 0,
+                      isLeft: false,
+                      bubbleColor: const Color(0xff4a8aca)),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: Text(
+                      message,
+                      style: const TextStyle(fontSize: 18, color: Colors.white),
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
-        ],
-      ),
+              );
+            }),
+          ],
+        ),
       ),
       const SizedBox(width: 10),
     ]);
@@ -259,7 +277,10 @@ class BubblePainter extends CustomPainter {
   final bool isLeft;
   final Color bubbleColor;
 
-  BubblePainter({required this.isFirstBubble, required this.isLeft, required this.bubbleColor});
+  BubblePainter(
+      {required this.isFirstBubble,
+      required this.isLeft,
+      required this.bubbleColor});
 
   @override
   void paint(Canvas canvas, Size size) {
