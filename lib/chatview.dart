@@ -254,27 +254,31 @@ class ChatBubbleLayoutRight extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                // 已读标识放在消息左侧，自适应位置
-                if (isRead && idx == messages.length - 1)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, right: 8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 200, 204, 209),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: const Text(
-                        "已读",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color.fromARGB(243, 255, 255, 255),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
+                // 为已读标识预留固定空间，确保布局一致性
+                SizedBox(
+                  width: 50, // 固定宽度，为已读标识预留空间
+                  child: idx == messages.length - 1 && isRead
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 8, right: 8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 200, 204, 209),
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: const Text(
+                              "已读",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color.fromARGB(243, 255, 255, 255),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        )
+                      : null, // 当不需要显示已读标识时，保持占位但不显示内容
+                ),
                 Flexible(
                   child: CustomPaint(
                     painter: BubblePainter(

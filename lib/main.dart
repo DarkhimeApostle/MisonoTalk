@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback, SystemNavigator;
@@ -116,6 +117,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
   List<String> recordMessages = [];
   late AppLinks appLinks;
   StreamSubscription<Uri>? linksSubscription;
+  static final Random _secureRandom = Random.secure();
 
   Future<void> initialize() async {
     clearMsg();
@@ -751,10 +753,21 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
     setState(() {
       inputLock = true;
       debugPrint("inputLocked");
-      // 标记最后一条用户消息为已读
-      if (messages.isNotEmpty && messages.last.type == Message.user) {
-        messages.last.isRead = true;
-      }
+
+      // 记录当前用户消息的索引
+      int currentUserMessageIndex = messages.length - 1;
+
+      // 延迟随机秒数（2-12秒）
+      Future.delayed(Duration(seconds: 2 + _secureRandom.nextInt(11)), () {
+        if (mounted &&
+            messages.isNotEmpty &&
+            currentUserMessageIndex < messages.length &&
+            messages[currentUserMessageIndex].type == Message.user) {
+          setState(() {
+            messages[currentUserMessageIndex].isRead = true;
+          });
+        }
+      });
     });
     List<List<String>> msg = parseMsg(
       await storage.getPrompt(withExternal: externalPrompt),
