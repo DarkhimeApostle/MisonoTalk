@@ -251,28 +251,31 @@ class ChatBubbleLayoutRight extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 // 为已读标识预留固定空间，确保布局一致性
                 SizedBox(
                   width: 50, // 固定宽度，为已读标识预留空间
                   child: idx == messages.length - 1 && isRead
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 8, right: 8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 200, 204, 209),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: const Text(
-                              "已读",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Color.fromARGB(243, 255, 255, 255),
-                                fontWeight: FontWeight.w500,
+                      ? Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 200, 204, 209),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: const Text(
+                                "已读",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color.fromARGB(243, 255, 255, 255),
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),

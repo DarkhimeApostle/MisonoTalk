@@ -84,7 +84,8 @@ class MainPage extends StatefulWidget {
   MainPageState createState() => MainPageState();
 }
 
-class MainPageState extends State<MainPage> with WidgetsBindingObserver {
+class MainPageState extends State<MainPage>
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   final fn = FocusNode();
   final textController = TextEditingController();
   final scrollController = ScrollController();
@@ -112,6 +113,7 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
   bool isAutoNotification = false;
   bool isOnTop = false;
   bool isEnglish = false; // 语言切换状态
+  bool isMenuOpen = false; // 跟踪菜单是否打开
   List<Message> messages = [];
   List<Message>? lastMessages;
   List<String> recordMessages = [];
@@ -1078,41 +1080,85 @@ class MainPageState extends State<MainPage> with WidgetsBindingObserver {
   }
 
   Widget popupMenu() {
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.add, color: Colors.white, size: 40),
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 'Language',
-          child: Text(getText('English', '中文')),
-        ),
-        PopupMenuItem(value: 'Clear', child: Text(getText('清除', 'Clear'))),
-        PopupMenuItem(value: 'Save', child: Text(getText('保存', 'Save'))),
-        PopupMenuItem(value: 'Time', child: Text(getText('时间', 'Time'))),
-        PopupMenuItem(value: 'System', child: Text(getText('系统', 'System'))),
-        PopupMenuItem(
-          value: 'ExtPrompt',
-          child: Text('ExtPrompt ${externalPrompt ? "√" : "×"}'),
-        ),
-        PopupMenuItem(value: 'Backup', child: Text(getText('备份', 'Backup'))),
-        // PopupMenuItem(value: 'Draw', child: Text(getText('绘画', 'AiDraw'))),
-        PopupMenuItem(value: 'History', child: Text(getText('历史', 'History'))),
-        PopupMenuItem(value: 'Records', child: Text(getText('记录', 'Records'))),
-        PopupMenuItem(value: 'Msgs', child: Text(getText('消息', 'Msgs'))),
-        PopupMenuItem(
-            value: 'Settings', child: Text(getText('设置', 'Settings'))),
-        if (inputLock)
-          PopupMenuItem(value: 'Stop', child: Text(getText('停止', 'Stop'))),
-        if (Platform.isWindows)
-          PopupMenuItem(
-            value: 'OnTop',
-            child: Text('OnTop ${isOnTop ? "√" : "×"}'),
-          ),
-        if (Platform.isWindows)
-          PopupMenuItem(value: 'Exit', child: Text(getText('退出', 'Exit'))),
-      ],
-      onSelected: (String value) {
-        onMenuSelected(value);
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isMenuOpen = true;
+        });
+
+        final RenderBox button = context.findRenderObject() as RenderBox;
+        final RenderBox overlay = Navigator.of(context)
+            .overlay!
+            .context
+            .findRenderObject() as RenderBox;
+        final buttonPosition =
+            button.localToGlobal(Offset.zero, ancestor: overlay);
+        final RelativeRect position = RelativeRect.fromLTRB(
+          buttonPosition.dx + 75, // 水平位置（激活自动适配）
+          buttonPosition.dy + 75, // 向下偏移75像素，避免遮挡按钮
+          0,
+          0,
+        );
+
+        showMenu(
+          context: context,
+          position: position,
+          items: [
+            PopupMenuItem(
+              value: 'Language',
+              child: Text(getText('English', '中文')),
+            ),
+            PopupMenuItem(value: 'Clear', child: Text(getText('清除', 'Clear'))),
+            PopupMenuItem(value: 'Save', child: Text(getText('保存', 'Save'))),
+            PopupMenuItem(value: 'Time', child: Text(getText('时间', 'Time'))),
+            PopupMenuItem(
+                value: 'System', child: Text(getText('系统', 'System'))),
+            PopupMenuItem(
+              value: 'ExtPrompt',
+              child: Text('ExtPrompt ${externalPrompt ? "√" : "×"}'),
+            ),
+            PopupMenuItem(
+                value: 'Backup', child: Text(getText('备份', 'Backup'))),
+            // PopupMenuItem(value: 'Draw', child: Text(getText('绘画', 'AiDraw'))),
+            PopupMenuItem(
+                value: 'History', child: Text(getText('历史', 'History'))),
+            PopupMenuItem(
+                value: 'Records', child: Text(getText('记录', 'Records'))),
+            PopupMenuItem(value: 'Msgs', child: Text(getText('消息', 'Msgs'))),
+            PopupMenuItem(
+                value: 'Settings', child: Text(getText('设置', 'Settings'))),
+            if (inputLock)
+              PopupMenuItem(value: 'Stop', child: Text(getText('停止', 'Stop'))),
+            if (Platform.isWindows)
+              PopupMenuItem(
+                value: 'OnTop',
+                child: Text('OnTop ${isOnTop ? "√" : "×"}'),
+              ),
+            if (Platform.isWindows)
+              PopupMenuItem(value: 'Exit', child: Text(getText('退出', 'Exit'))),
+          ],
+        ).then((value) {
+          setState(() {
+            isMenuOpen = false;
+          });
+          if (value != null) {
+            onMenuSelected(value);
+          }
+        });
       },
+      child: Container(
+        width: 40,
+        height: 40,
+        child: AnimatedRotation(
+          duration: const Duration(milliseconds: 200),
+          turns: isMenuOpen ? 0.125 : 0.0, // 0.125圈 = 45度
+          child: Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 40,
+          ),
+        ),
+      ),
     );
   }
 
