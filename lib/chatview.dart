@@ -259,9 +259,10 @@ class ChatBubbleLayoutRight extends StatelessWidget {
                   width: 50, // 固定宽度，为已读标识预留空间
                   child: idx == messages.length - 1 && isRead
                       ? Align(
-                          alignment: Alignment.bottomLeft,
+                          alignment: Alignment.bottomRight, // 改为右对齐，让已读标识贴近消息框
                           child: Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
+                            padding: const EdgeInsets.only(
+                                bottom: 4, right: 4), // 添加右边距，让已读标识更贴近消息框
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
@@ -355,7 +356,7 @@ class BubblePainter extends CustomPainter {
           triangleHeight = size.height * 0.4; // 小气泡使用更小的三角形
         }
 
-        // 用户消息的三角小尾巴向右偏移，避免与气泡边缘重叠 
+        // 用户消息的三角小尾巴向右偏移，避免与气泡边缘重叠
         double offset = 3.0; //
         path.moveTo(size.width + triangleWidth / 2 + offset, centerY);
         path.lineTo(size.width - triangleWidth / 2 + offset,
