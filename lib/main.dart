@@ -26,6 +26,7 @@ import 'msgeditor.dart';
 import 'aidraw.dart';
 import 'recordmsgs.dart';
 import 'leftpanel.dart';
+import 'longing_algorithm_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,7 @@ Future<void> main() async {
   await StorageService().init();
   NotificationHelper notificationHelper = NotificationHelper();
   await notificationHelper.initialize();
+  await LongingAlgorithmService.initialize();
   runApp(const MomotalkApp());
 }
 
@@ -114,6 +116,7 @@ class MainPageState extends State<MainPage>
   bool isOnTop = false;
   bool isEnglish = false; // 语言切换状态
   bool isMenuOpen = false; // 跟踪菜单是否打开
+  bool _isNewResponseStream = true; // 新响应流标志
   List<Message> messages = [];
   List<Message>? lastMessages;
   List<String> recordMessages = [];
@@ -621,7 +624,8 @@ class MainPageState extends State<MainPage>
 
   void updateResponse(String response) {
     setState(() {
-      if (messages.last.type != Message.assistant) {
+      if (_isNewResponseStream || messages.last.type != Message.assistant) {
+        _isNewResponseStream = false; // 这是新回复的第一个数据块
         splitCount = 0;
         messages.add(Message(message: response, type: Message.assistant));
       } else {
@@ -641,7 +645,7 @@ class MainPageState extends State<MainPage>
             response = "Thinking... ${response.length - 7}";
           }
         }
-        messages.last.message = response;
+        messages.last.message = response; // 这是同一个回复的后续数据块
       }
     });
     var currentSplitCount = response.split("\\").length;
@@ -715,10 +719,16 @@ class MainPageState extends State<MainPage>
     });
   }
 
-  Future<void> sendMsg(bool realSend, {bool forceSend = false}) async {
-    if (inputLock) {
+  Future<void> sendMsg(bool realSend,
+      {bool forceSend = false, bool bypassLock = false}) async {
+    // 监听哨 F: 确认 sendMsg 函数被调用
+    debugPrint("[sendMsg] - F: 函数被调用。 bypassLock=$bypassLock");
+
+    if (inputLock && !bypassLock) {
       return;
     }
+
+    // 只有在非强制发送时才处理用户输入和清理操作
     if (!forceSend) {
       if ((!realSend) || (realSend && textController.text.isNotEmpty)) {
         setState(() {
@@ -752,9 +762,11 @@ class MainPageState extends State<MainPage>
       }
       userMsg = "";
     }
+
     setState(() {
       inputLock = true;
       debugPrint("inputLocked");
+      _isNewResponseStream = true; // 重置新响应流标志
 
       // 记录当前用户消息的索引
       int currentUserMessageIndex = messages.length - 1;
@@ -823,35 +835,83 @@ class MainPageState extends State<MainPage>
             }
           }
         },
-        () {
-          debugPrint("done.");
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            setScrollPercent(1.0);
-          });
-          setState(() {
-            inputLock = false;
-          });
-          if (!isForeground && !notificationSent) {
-            isAutoNotification = true;
-            notificationSent = true;
-            notification.showNotification(
-              title: getText("完成", "Done"),
-              body: "",
-              showAvatar: false,
-            );
-          }
-          if (messages.last.type != Message.assistant) return;
-          setState(() {
-            messages.last.message = formatMsg(messages.last.message);
-          });
-          if (messages.last.message.contains("\\")) {
-            String msg = msgListToJson(messages);
-            storage.setTempHistory(msg);
-            if (messages.last.type == Message.assistant) {
-              recordMessages.add(msg);
+        () async {
+          // 监听哨 A: 确认 onDone 的 async 回调被触发
+          debugPrint("[onDone] - A: 异步回调已进入。");
+
+          try {
+            final storage = StorageService();
+            await storage.init();
+            // 监听哨 B: 确认 storage.init() 完成
+            debugPrint("[onDone] - B: Storage服务已初始化。");
+
+            await storage.reload(); // 强制从磁盘重新加载最新的 shared_preferences 数据
+
+            final counter = await storage.getLongingCounter();
+            final threshold = await storage.getImpulseThreshold();
+            // 监听哨 C: 打印出用于判断的真实数值
+            debugPrint("[onDone] - C: 获取到 计数=$counter, 阈值=$threshold");
+
+            if (counter >= threshold) {
+              // 监听哨 D: 确认判断条件通过，即将追问
+              debugPrint("[onDone] - D: 条件满足！准备执行冲动追问...");
+
+              // 重置状态
+              await storage.setLongingCounter(0);
+              await storage.setImpulseThreshold(0);
+              await storage.setLastInteractionTime(DateTime.now());
+
+              // 立刻追问
+              sendMsg(true, forceSend: true, bypassLock: true);
+              return;
+            } else if (Random().nextDouble() < 0.05) {
+              // 5%的随机冲动概率
+              // 监听哨 E: 随机冲动触发
+              debugPrint("[onDone] - E: 随机冲动触发！准备执行随机追问...");
+
+              // 重要的区别：随机冲动不应该重置计数器
+              // await storage.setLongingCounter(0); // 注释掉或删除这一行
+              await storage.setImpulseThreshold(0); // 重置阈值，避免连续随机触发
+              await storage.setLastInteractionTime(DateTime.now());
+
+              sendMsg(true, forceSend: true, bypassLock: true);
+              return;
             }
+
+            // 如果冲动模式未触发，才执行原来的 onDone 逻辑
+            debugPrint("[onDone] - F: 条件不满足，执行常规onDone逻辑。");
+            // ... (保留所有原来的常规onDone逻辑)
+            debugPrint("done.");
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              setScrollPercent(1.0);
+            });
+            setState(() {
+              inputLock = false;
+            });
+            if (!isForeground && !notificationSent) {
+              isAutoNotification = true;
+              notificationSent = true;
+              notification.showNotification(
+                title: getText("完成", "Done"),
+                body: "",
+                showAvatar: false,
+              );
+            }
+            if (messages.last.type != Message.assistant) return;
+            setState(() {
+              messages.last.message = formatMsg(messages.last.message);
+            });
+            if (messages.last.message.contains("\\")) {
+              String msg = msgListToJson(messages);
+              this.storage.setTempHistory(msg);
+              if (messages.last.type == Message.assistant) {
+                recordMessages.add(msg);
+              }
+            }
+            lastMessages = null;
+          } catch (e) {
+            debugPrint("[onDone] - ERROR: 在onDone回调中发生致命错误: $e");
           }
-          lastMessages = null;
         },
         (err) {
           setState(() {

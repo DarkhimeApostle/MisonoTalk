@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -21,6 +22,10 @@ class StorageService {
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+  }
+
+  Future<void> reload() async {
+    await _prefs.reload();
   }
 
   // List 0:base_url 1:api_key 2:model_name 3:temperature 4:frequency_penalty 5:presence_penalty 6:max_tokens
@@ -329,5 +334,48 @@ class StorageService {
     } else {
       return null;
     }
+  }
+
+  Future<bool> getLongingAlgorithmStatus() async {
+    return _prefs.getBool("longing_algorithm_status") ?? false;
+  }
+
+  Future<void> setLongingAlgorithmStatus(bool value) async {
+    await _prefs.setBool("longing_algorithm_status", value);
+  }
+
+  // 渴望算法相关的新状态管理方法
+  Future<void> setLastInteractionTime(DateTime time) async {
+    await _prefs.setString(
+        "last_interaction_time", time.millisecondsSinceEpoch.toString());
+  }
+
+  Future<DateTime?> getLastInteractionTime() async {
+    String? timeStr = _prefs.getString("last_interaction_time");
+    if (timeStr == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(int.parse(timeStr));
+  }
+
+  Future<void> setLongingCounter(int count) async {
+    await _prefs.setInt("longing_counter", count);
+  }
+
+  Future<int> getLongingCounter() async {
+    return _prefs.getInt("longing_counter") ?? 0;
+  }
+
+  // 冲动阈值管理方法
+  Future<void> setImpulseThreshold(int count) async {
+    await _prefs.setInt("impulse_threshold", count);
+  }
+
+  Future<int> getImpulseThreshold() async {
+    int? threshold = _prefs.getInt("impulse_threshold");
+    if (threshold == null || threshold == 0) {
+      // 生产环境：生成2到8之间的随机整数
+      threshold = 2 + Random().nextInt(6);
+      await setImpulseThreshold(threshold);
+    }
+    return threshold;
   }
 }
