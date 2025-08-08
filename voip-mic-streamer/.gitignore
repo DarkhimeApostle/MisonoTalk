@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+*/build/
+local.properties
+.gradle
+
+# Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+captures/
+.externalNativeBuild/
+.cxx/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keystore
+*.jks
+*.keystore
+
+# Logs
+*.log
+
+# Generated
+app/release/
+app/debug/
